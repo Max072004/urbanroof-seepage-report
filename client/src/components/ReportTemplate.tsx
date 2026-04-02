@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Thermometer, AlertTriangle, TrendingUp, DollarSign,
-  MapPin, Activity, Download, FileText, CheckCircle, Shield,
+  MapPin, Activity, FileText, CheckCircle, Shield,
 } from 'lucide-react';
 import { ThermalScanData, InspectionData } from '../lib/pdfExtractor';
 import { AIAnalysisResult } from '../lib/aiEngine';
@@ -131,32 +131,6 @@ function SeverityDial({ score, tier, isExporting = false }: { score: number; tie
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function ReportTemplate({ thermalData, inspection, analysis }: Props) {
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleDownloadPDF = async () => {
-    setIsExporting(true);
-    // Wait two frames so React re-renders all animated components at their
-    // final target values before html2canvas captures the DOM.
-    await new Promise(r => setTimeout(r, 300));
-    try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      const element = document.getElementById('report-content');
-      if (!element) return;
-      await html2pdf().set({
-        margin: [8, 8, 8, 8],
-        filename: `UrbanRoof_Seepage_Report_${inspection.customerName.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-      }).from(element).save();
-    } catch (err) {
-      console.error('PDF export error:', err);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handlePrint = () => window.print();
 
   const formatINR = (n: number) =>
@@ -169,18 +143,10 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
     v >= 80 ? '#dc2626' : v >= 60 ? '#f59e0b' : '#16a34a';
 
   return (
-    <div className="max-w-4xl mx-auto font-sans">
+    <div className="max-w-4xl mx-auto font-sans px-2 sm:px-0">
 
       {/* ── Action Buttons (outside report content, not in PDF) ── */}
       <div className="flex flex-wrap gap-4 justify-center mb-6 print:hidden">
-        <button
-          onClick={handleDownloadPDF}
-          disabled={isExporting}
-          className="flex items-center gap-2 bg-[#E8520A] hover:bg-[#c94408] text-white font-bold px-8 py-3 rounded-lg transition-colors disabled:opacity-50 text-sm"
-        >
-          <Download className="w-5 h-5" />
-          {isExporting ? 'Generating PDF…' : 'Download PDF Report'}
-        </button>
         <button
           onClick={handlePrint}
           className="flex items-center gap-2 bg-[#0B1D35] hover:bg-[#162d50] text-white font-bold px-8 py-3 rounded-lg transition-colors text-sm"
@@ -196,29 +162,29 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
       <div id="report-content" className="bg-white rounded-2xl shadow-lg overflow-hidden">
 
         {/* ── Header ── */}
-        <div className="bg-[#0B1D35] text-white px-8 py-6 flex items-center justify-between">
+        <div className="bg-[#0B1D35] text-white px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
           <div className="flex items-center gap-4">
             <img
               src="/urbanroof-logo.png"
               alt="UrbanRoof"
-              className="h-14 w-auto object-contain"
+              className="h-10 sm:h-14 w-auto object-contain"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           </div>
-          <div className="text-right">
-            <h1 className="text-xl font-bold tracking-wide">AI-Powered Seepage Detection Report</h1>
-            <p className="text-sm text-blue-200 mt-1">
+          <div className="text-center sm:text-right">
+            <h1 className="text-base sm:text-xl font-bold tracking-wide">AI-Powered Seepage Detection Report</h1>
+            <p className="text-xs sm:text-sm text-blue-200 mt-1">
               Generated: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
             </p>
             <p className="text-xs text-blue-300 mt-0.5">Confidential — For Client Use Only</p>
           </div>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-3 sm:p-8 space-y-6 sm:space-y-8">
 
           {/* ── Section 1: Customer & Inspection Details ── */}
           <Section title="Customer & Inspection Details" icon={<MapPin className="w-5 h-5" />}>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               {[
                 { label: 'Customer Name', value: inspection.customerName },
                 { label: 'Mobile Number', value: inspection.mobileNumber },
@@ -253,12 +219,12 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
                   return (
                     <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm print:break-inside-avoid">
                       {/* Scan header */}
-                      <div className="bg-[#0B1D35] text-white px-5 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div className="bg-[#0B1D35] text-white px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <span className="font-bold text-sm">Scan #{scan.pageNumber}</span>
-                          <span className="text-xs text-blue-200">{scan.filename}</span>
+                          <span className="text-xs text-blue-200 hidden sm:inline">{scan.filename}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className="px-3 py-1 rounded-full text-xs font-bold border"
                             style={{ borderColor: scanTierColor, color: scanTierColor, backgroundColor: 'rgba(255,255,255,0.08)' }}
@@ -300,8 +266,8 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
                           )}
                         </div>
                         {/* Data */}
-                        <div className="p-5">
-                          <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="p-3 sm:p-5">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                             <div className="bg-red-50 rounded-lg p-3 text-center">
                               <p className="text-xs text-gray-500 mb-1">Hotspot</p>
                               <p className="text-xl font-bold text-red-600">{scan.hotspot}°C</p>
@@ -341,7 +307,7 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
           {/* ── Section 3: Severity Score ── */}
           <Section title="AI Severity Assessment" icon={<AlertTriangle className="w-5 h-5" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <SeverityDial score={analysis.severityScore} tier={analysis.severityTier} isExporting={isExporting} />
+              <SeverityDial score={analysis.severityScore} tier={analysis.severityTier} />
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Analysis Basis</p>
@@ -371,7 +337,7 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
               <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Moisture Coverage</p>
                 <div className="flex items-end gap-3 mb-3">
-                  <span className="text-5xl font-black" style={{ color: tierColor }}>
+                  <span className="text-3xl sm:text-5xl font-black" style={{ color: tierColor }}>
                     {analysis.moistureSpread.percentage}%
                   </span>
                   <span className="text-sm text-gray-500 mb-2">of affected area</span>
@@ -419,7 +385,7 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
                         {src.confidence}% confidence
                       </span>
                     </div>
-                    <AnimatedBar value={src.confidence} color={src.confidence >= 80 ? '#dc2626' : src.confidence >= 65 ? '#f59e0b' : '#16a34a'} label="" isExporting={isExporting} />
+                    <AnimatedBar value={src.confidence} color={src.confidence >= 80 ? '#dc2626' : src.confidence >= 65 ? '#f59e0b' : '#16a34a'} label="" />
                     <p className="text-xs text-gray-600 leading-relaxed mt-2">{src.description}</p>
                   </div>
                 ))}
@@ -486,9 +452,9 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
               ].map(({ label, data }) => (
                 <div key={label} className="bg-gray-50 rounded-xl p-4 border border-gray-200 print:break-inside-avoid">
                   <p className="text-xs font-bold text-[#0B1D35] uppercase tracking-wide mb-3 text-center">{label}</p>
-                  <AnimatedBar value={data.paintFailure} color={riskColor(data.paintFailure)} label="Paint Failure" isExporting={isExporting} />
-                  <AnimatedBar value={data.structuralDamage} color={riskColor(data.structuralDamage)} label="Structural Damage" isExporting={isExporting} />
-                  <AnimatedBar value={data.rccCorrosion} color={riskColor(data.rccCorrosion)} label="RCC Corrosion" isExporting={isExporting} />
+                  <AnimatedBar value={data.paintFailure} color={riskColor(data.paintFailure)} label="Paint Failure" />
+                  <AnimatedBar value={data.structuralDamage} color={riskColor(data.structuralDamage)} label="Structural Damage" />
+                  <AnimatedBar value={data.rccCorrosion} color={riskColor(data.rccCorrosion)} label="RCC Corrosion" />
                 </div>
               ))}
             </div>
@@ -497,18 +463,18 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
           {/* ── Section 8: Cost Escalation ── */}
           <Section title="Cost Escalation Analysis" icon={<DollarSign className="w-5 h-5" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6 text-center">
+              <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4 sm:p-6 text-center">
                 <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-2">Fix Now — Total Project Cost</p>
-                <p className="text-4xl font-black text-green-700">
+                <p className="text-2xl sm:text-4xl font-black text-green-700">
                   {analysis.costEscalation.fixNow > 0 ? formatINR(analysis.costEscalation.fixNow) : 'As per estimate'}
                 </p>
                 <p className="text-xs text-green-600 mt-2">Based on inspection report estimates</p>
               </div>
-              <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6 text-center">
+              <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 sm:p-6 text-center">
                 <p className="text-xs font-bold text-red-700 uppercase tracking-wide mb-2">
                   If Delayed 6 Months ({analysis.costEscalation.delayMultiplier}× escalation)
                 </p>
-                <p className="text-4xl font-black text-red-700">
+                <p className="text-2xl sm:text-4xl font-black text-red-700">
                   {analysis.costEscalation.delayedCost > 0 ? formatINR(analysis.costEscalation.delayedCost) : 'Significantly Higher'}
                 </p>
                 <p className="text-xs text-red-600 mt-2">Projected cost including structural damage repair</p>
@@ -552,7 +518,7 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
               className="rounded-xl p-6 border-2 text-center"
               style={{ borderColor: tierColor, backgroundColor: `${tierColor}10` }}
             >
-              <p className="text-3xl font-black mb-2" style={{ color: tierColor }}>
+              <p className="text-xl sm:text-3xl font-black mb-2" style={{ color: tierColor }}>
                 {analysis.recommendedAction.directive}
               </p>
               <p className="text-sm text-gray-600 mb-4">
@@ -582,7 +548,7 @@ export default function ReportTemplate({ thermalData, inspection, analysis }: Pr
         </div>{/* end padding wrapper */}
 
         {/* ── Footer ── */}
-        <div className="bg-[#0B1D35] text-white px-8 py-4 flex items-center justify-between text-xs">
+        <div className="bg-[#0B1D35] text-white px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-center sm:text-left">
           <div className="flex items-center gap-3">
             <img
               src="/urbanroof-logo.png"

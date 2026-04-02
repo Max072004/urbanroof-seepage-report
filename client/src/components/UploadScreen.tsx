@@ -37,22 +37,22 @@ export function UploadScreen({ onFilesSelected, isLoading }: UploadScreenProps) 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-3 sm:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl"
       >
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 space-y-6 sm:space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-foreground">Seepage Detection Analysis</h1>
-            <p className="text-muted-foreground">Upload thermal and inspection PDFs for AI-powered analysis</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Seepage Detection Analysis</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Upload thermal and inspection PDFs for AI-powered analysis</p>
           </div>
 
           {/* Upload Areas */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Thermal Scan Upload */}
             <motion.div
               whileHover={{ scale: 1.02 }}
